@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>K Tracker</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Inter:wght@400;600;700;900&display=swap');
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0a0a0f;
+      color: #e0e0e8;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 30% 20%, rgba(56,189,248,.08) 0%, transparent 60%),
+        radial-gradient(ellipse at 70% 80%, rgba(168,85,247,.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent, transparent 2px,
+        rgba(0,0,0,.03) 2px, rgba(0,0,0,.03) 4px
+      );
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      padding: 1rem;
+      gap: clamp(.5rem, 2vh, 1.5rem);
+    }
+
+    /* ---- ASCII banner ---- */
+    .banner {
+      flex-shrink: 1;
+      min-height: 0;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .banner pre {
+      font-family: 'JetBrains Mono', monospace;
+      /* scale font so the ~71-char wide art fits in ~90% of viewport width */
+      font-size: clamp(4px, 1.25vw, 13px);
+      line-height: 1.15;
+      color: #38bdf8;
+      text-shadow: 0 0 20px rgba(56,189,248,.35);
+      letter-spacing: 0;
+      user-select: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    @media (max-height: 480px), (max-width: 360px) {
+      .banner { display: none; }
+    }
+
+    /* ---- counter card ---- */
+    .counter-card {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: clamp(12px, 2vw, 20px);
+      padding: clamp(1rem, 3vh, 3rem) clamp(1.5rem, 4vw, 4rem);
+      backdrop-filter: blur(12px);
+      box-shadow:
+        0 0 60px rgba(56,189,248,.06),
+        0 0 120px rgba(168,85,247,.04);
+      flex-shrink: 0;
+    }
+
+    .label {
+      font-size: clamp(10px, 1.4vw, 16px);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .18em;
+      color: #888;
+      margin-bottom: clamp(.3rem, 1vh, 1rem);
+    }
+
+    .days-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: .3em;
+    }
+
+    #days {
+      font-size: clamp(48px, 10vw, 140px);
+      font-weight: 900;
+      line-height: 1;
+      background: linear-gradient(135deg, #38bdf8, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .days-unit {
+      font-size: clamp(14px, 2.5vw, 32px);
+      font-weight: 700;
+      color: #666;
+    }
+
+    .sub-counter {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(11px, 1.4vw, 18px);
+      color: #555;
+      margin-top: .2rem;
+    }
+
+    .message {
+      font-size: clamp(12px, 1.8vw, 20px);
+      font-weight: 600;
+      color: #c4c4cc;
+      line-height: 1.4;
+      flex-shrink: 0;
+    }
+    .message em { font-style: normal; color: #38bdf8; }
+
+    .meta {
+      position: absolute;
+      bottom: clamp(6px, 1.5vh, 16px);
+      left: 0; right: 0;
+      text-align: center;
+      font-size: clamp(9px, 1vw, 12px);
+      font-family: 'JetBrains Mono', monospace;
+      color: #444;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { filter: drop-shadow(0 0 8px rgba(56,189,248,.3)); }
+      50%      { filter: drop-shadow(0 0 20px rgba(168,85,247,.5)); }
+    }
+    .days-row { animation: pulse-glow 4s ease-in-out infinite; }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <div class="banner" aria-hidden="true">
+<pre>
+ ██╗  ██╗    ████████╗██████╗  █████╗  ██████╗██╗  ██╗███████╗██████╗
+ ██║ ██╔╝    ╚══██╔══╝██╔══██╗██╔══██╗██╔════╝██║ ██╔╝██╔════╝██╔══██╗
+ █████╔╝        ██║   ██████╔╝███████║██║     █████╔╝ █████╗  ██████╔╝
+ ██╔═██╗        ██║   ██╔══██╗██╔══██║██║     ██╔═██╗ ██╔══╝  ██╔══██╗
+ ██║  ██╗       ██║   ██║  ██║██║  ██║╚██████╗██║  ██╗███████╗██║  ██║
+ ╚═╝  ╚═╝       ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
+</pre>
+    </div>
+
+    <div class="counter-card">
+      <div class="label">Days since last spotting</div>
+      <div class="days-row">
+        <div id="days">0</div>
+        <div class="days-unit">day(s)</div>
+      </div>
+      <div class="sub-counter" id="hms">00h 00m 00s</div>
+    </div>
+
+    <div class="message">
+      It has been <em id="days-echo">0</em> day(s) since <em>K</em> has been seen alive.
+    </div>
+
+    <div class="meta" id="meta"></div>
+  </div>
+
+  <script>
+    async function main() {
+      const res = await fetch('./reset.json', { cache: 'no-store' });
+      const data = await res.json();
+      const resetMs = data.reset_ms || Date.now();
+
+      const daysEl   = document.getElementById('days');
+      const daysEcho = document.getElementById('days-echo');
+      const hmsEl    = document.getElementById('hms');
+      const meta     = document.getElementById('meta');
+
+      meta.textContent = 'Last reset: ' + new Date(resetMs).toLocaleString();
+
+      function tick() {
+        const totalSec = Math.max(0, Math.floor((Date.now() - resetMs) / 1000));
+        const d = Math.floor(totalSec / 86400);
+        const h = Math.floor((totalSec % 86400) / 3600);
+        const m = Math.floor((totalSec % 3600) / 60);
+        const s = totalSec % 60;
+
+        daysEl.textContent   = String(d);
+        daysEcho.textContent = String(d);
+        hmsEl.textContent    =
+          String(h).padStart(2,'0') + 'h ' +
+          String(m).padStart(2,'0') + 'm ' +
+          String(s).padStart(2,'0') + 's';
+      }
+
+      tick();
+      setInterval(tick, 250);
+    }
+    main();
+  </script>
+</body>
+</html>

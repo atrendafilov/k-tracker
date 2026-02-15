@@ -1,0 +1,47 @@
+name: Reset clock and deploy Pages
+
+on:
+  repository_dispatch:
+    types: [slack_reset]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  reset:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reset timestamp
+        run: |
+          NOW_MS=$(date +%s%3N)
+          echo "{ \"reset_ms\": ${NOW_MS} }" > reset.json
+
+      - name: Commit reset.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add reset.json
+          git commit -m "Reset clock from Slack" || echo "No changes to commit"
+          git push
+
+  deploy:
+    needs: reset
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - uses: actions/deploy-pages@v4
