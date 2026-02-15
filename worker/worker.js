@@ -25,7 +25,7 @@ export default {
           'Authorization': `Bearer ${env.GITHUB_TOKEN}`,
           'Accept': 'application/vnd.github+json',
           'X-GitHub-Api-Version': '2022-11-28',
-          'User-Agent': 'kala-tracker-slack-bridge',
+          'User-Agent': 'k-tracker-slack-bridge',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -40,7 +40,7 @@ export default {
       return new Response(
         JSON.stringify({
           response_type: 'in_channel',
-          text: 'Clock has been reset! Kalata has been spotted.',
+          text: 'Clock has been reset! K has been spotted.',
         }),
         { headers: { 'Content-Type': 'application/json' } }
       );

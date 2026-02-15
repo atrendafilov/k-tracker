@@ -4,11 +4,14 @@ on:
   repository_dispatch:
     types: [slack_reset]
   workflow_dispatch:
+  issues:
+    types: [closed]
 
 permissions:
   contents: write
   pages: write
   id-token: write
+  issues: write
 
 concurrency:
   group: pages
@@ -17,6 +20,8 @@ concurrency:
 jobs:
   reset:
     runs-on: ubuntu-latest
+    # Only fire for issue #1 (the trigger issue), or non-issue triggers
+    if: github.event_name != 'issues' || github.event.issue.number == 1
     steps:
       - uses: actions/checkout@v4
 
@@ -30,8 +35,14 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add reset.json
-          git commit -m "Reset clock from Slack" || echo "No changes to commit"
+          git commit -m "Reset clock — spotted!" || echo "No changes to commit"
           git push
+
+      - name: Reopen trigger issue
+        if: github.event_name == 'issues'
+        run: gh issue reopen "${{ github.event.issue.number }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   deploy:
     needs: reset
